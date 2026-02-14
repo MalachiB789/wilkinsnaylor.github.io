@@ -38,7 +38,16 @@
             Share a few details and we will come back to you with the right next steps.
           </p>
 
-          <form class="form" action="#" method="post">
+          <form
+            class="form"
+            action="https://formsubmit.co/ajax/malachi.bielby@gmail.com"
+            method="post"
+            data-contact-form
+            data-contact-endpoint="https://formsubmit.co/ajax/malachi.bielby@gmail.com"
+          >
+            <input type="hidden" name="_subject" value="New website enquiry" />
+            <input type="hidden" name="_captcha" value="false" />
+            <input type="text" name="_honey" tabindex="-1" autocomplete="off" style="display:none" />
             <label class="field">
               <span>Name</span>
               <input type="text" name="name" autocomplete="name" placeholder="Your full name" required />
@@ -66,12 +75,12 @@
 
             <div class="hero-actions">
               <button class="btn" type="submit">Send message</button>
-              <a class="btn-outline" href="mailto:hello@yourdomain.co.uk">Email instead</a>
             </div>
+            <p class="muted" data-contact-status aria-live="polite"></p>
           </form>
         </article>
 
-        <aside class="panel panel-soft">
+        <aside class="panel">
           <h2>Contact details</h2>
           <p class="muted">You can also reach us directly using the details below.</p>
 
@@ -95,10 +104,6 @@
               <div class="contact-label">Coverage</div>
               <p class="muted">Yorkshire and Lancashire</p>
             </div>
-          </div>
-
-          <div class="note">
-            Include your preferred area and the type of property you are interested in so we can reply faster.
           </div>
         </aside>
       </div>

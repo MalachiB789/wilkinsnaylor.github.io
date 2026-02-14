@@ -101,6 +101,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
   padding: 11px 18px;
   border-radius: 10px;
   border: 1px solid var(--primary);

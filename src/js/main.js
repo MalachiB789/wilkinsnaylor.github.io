@@ -100,6 +100,56 @@ function initializeReviewModal() {
 }
 
 /**
+ * Sends contact form submissions directly via HTTP.
+ */
+function initializeContactForm() {
+  const formElement = document.querySelector("[data-contact-form]");
+  if (!formElement) return;
+  const statusElement = formElement.querySelector("[data-contact-status]");
+  const submitButton = formElement.querySelector("button[type=\"submit\"]");
+
+  formElement.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    if (!(submitButton instanceof HTMLButtonElement)) return;
+    const formData = new FormData(formElement);
+    const endpoint = (formElement.getAttribute("data-contact-endpoint") || formElement.getAttribute("action") || "").trim();
+    if (!endpoint) return;
+
+    submitButton.disabled = true;
+    const originalButtonText = submitButton.textContent;
+    let wasSuccessful = false;
+    submitButton.textContent = "Sending...";
+    if (statusElement) statusElement.textContent = "";
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        body: formData,
+        headers: { Accept: "application/json" },
+      });
+
+      if (!response.ok) throw new Error(`Unexpected status ${response.status}`);
+      wasSuccessful = true;
+      formElement.reset();
+      if (statusElement) statusElement.textContent = "";
+      submitButton.textContent = "Sent!";
+      setTimeout(() => {
+        submitButton.textContent = originalButtonText;
+        submitButton.disabled = false;
+      }, 1600);
+    } catch (_error) {
+      if (statusElement) statusElement.textContent = "Message failed to send. Please try again.";
+    } finally {
+      if (!wasSuccessful) {
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+      }
+    }
+  });
+}
+
+/**
  * Bootstraps shared page chrome and global UI state.
  */
 (async function initializeSiteLayout() {
@@ -112,4 +162,5 @@ function initializeReviewModal() {
   renderCurrentYear();
   initializeReviewsCarousel();
   initializeReviewModal();
+  initializeContactForm();
 })();
