@@ -4,14 +4,27 @@
       <img class="brand-logo" src="../assets/images/logo.jpeg" alt="Wilkins Naylor Homes logo">
     </a>
 
-    <nav class="nav" aria-label="Primary">
+    <button
+      class="nav-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="site-nav"
+      aria-label="Open menu"
+      data-nav-toggle
+    >
+      <span class="nav-toggle-line"></span>
+      <span class="nav-toggle-line"></span>
+      <span class="nav-toggle-line"></span>
+    </button>
+
+    <nav class="nav" aria-label="Primary" id="site-nav" data-site-nav>
       <a class="nav-link" href="./index.html">Home</a>
       <a class="nav-link" href="./about.html">About</a>
-      <div class="nav-dropdown">
-        <span class="nav-link nav-dropdown-toggle">Services</span>
+      <div class="nav-dropdown" data-nav-dropdown>
+        <button class="nav-link nav-dropdown-toggle" type="button" aria-expanded="false" data-nav-dropdown-toggle>Services</button>
         <div class="nav-dropdown-menu" aria-label="Services pages">
-          <a class="nav-link nav-sub-link" href="./naylor-homes-ltd-services.html">Naylor Homes Ltd</a>
-          <a class="nav-link nav-sub-link" href="./wilkins-naylor-homes-ltd.html">Wilkins Naylor Homes Ltd</a>
+          <a class="nav-link nav-sub-link" href="./naylor-homes-ltd.html">Naylor Homes Ltd</a>
+          <a class="nav-link nav-sub-link" href="./wilkins-naylor-ltd.html">Wilkins Naylor Ltd</a>
         </div>
       </div>
       <a class="nav-link" href="./blog.html">Blog</a>

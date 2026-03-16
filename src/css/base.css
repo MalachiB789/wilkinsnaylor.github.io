@@ -53,3 +53,16 @@ p{ margin: 0; font-size: 15px; line-height: 1.7; }
 
 .section{ padding: 56px 0; }
 .section-light{ background: var(--soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+@media (max-width: 900px){
+  .section{ padding: 48px 0; }
+}
+
+@media (max-width: 640px){
+  .container{
+    width: min(var(--container), calc(100% - 24px));
+  }
+  h1{ font-size: clamp(28px, 8vw, 36px); }
+  h2{ font-size: 24px; }
+  p{ font-size: 14px; }
+}

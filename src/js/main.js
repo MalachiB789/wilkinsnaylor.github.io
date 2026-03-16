@@ -9,15 +9,42 @@ async function injectHtmlInclude(targetElementId, includeFilePath) {
   targetElement.innerHTML = await response.text();
 }
 
+function isBlogDetailPage() {
+  return location.pathname.toLowerCase().includes("/blog/");
+}
+
+function rewriteInjectedLinksForNestedBlogPages() {
+  if (!isBlogDetailPage()) return;
+
+  document.querySelectorAll("#site-header a[href], #site-footer a[href]").forEach((link) => {
+    const href = link.getAttribute("href");
+    if (!href || !href.startsWith("./")) return;
+    link.setAttribute("href", `../${href.slice(2)}`);
+  });
+
+  document.querySelectorAll("#site-header img[src], #site-footer img[src]").forEach((image) => {
+    const src = image.getAttribute("src");
+    if (!src) return;
+    if (src.startsWith("../assets/")) {
+      image.setAttribute("src", `../${src}`);
+    }
+  });
+}
+
 /**
  * Marks the current page link in the shared navigation.
  */
 function highlightCurrentNavLink() {
   const currentFileName = (location.pathname.split("/").pop() || "index.html").toLowerCase();
-  const normalizedFileName = currentFileName.startsWith("blog-") ? "blog.html" : currentFileName;
-  document.querySelectorAll(".nav-link").forEach((navLink) => {
+  const normalizedFileName = isBlogDetailPage() ? "blog.html" : currentFileName;
+  document.querySelectorAll(".nav-link, .nav-sub-link").forEach((navLink) => {
     const href = (navLink.getAttribute("href") || "").toLowerCase();
-    if (href.endsWith(normalizedFileName)) navLink.classList.add("is-active");
+    if (href.endsWith(normalizedFileName)) {
+      navLink.classList.add("is-active");
+      // If it's a sub-link, also highlight the parent dropdown toggle
+      const parentDropdown = navLink.closest(".nav-dropdown");
+      if (parentDropdown) parentDropdown.querySelector(".nav-dropdown-toggle")?.classList.add("is-active");
+    }
   });
 }
 
@@ -27,6 +54,70 @@ function highlightCurrentNavLink() {
 function renderCurrentYear() {
   const yearElement = document.getElementById("year");
   if (yearElement) yearElement.textContent = String(new Date().getFullYear());
+}
+
+/**
+ * Enables hamburger navigation for mobile breakpoints.
+ */
+function initializeMobileNavigation() {
+  const siteHeader = document.querySelector(".site-header");
+  const navToggleButton = document.querySelector("[data-nav-toggle]");
+  const navElement = document.querySelector("[data-site-nav]");
+  const servicesDropdown = navElement?.querySelector("[data-nav-dropdown]");
+  const servicesToggleButton = navElement?.querySelector("[data-nav-dropdown-toggle]");
+  if (!siteHeader || !(navToggleButton instanceof HTMLButtonElement) || !navElement) return;
+
+  const mobileQuery = window.matchMedia("(max-width: 900px)");
+
+  const closeMenu = () => {
+    siteHeader.classList.remove("is-menu-open");
+    navToggleButton.setAttribute("aria-expanded", "false");
+    navToggleButton.setAttribute("aria-label", "Open menu");
+    if (servicesDropdown && servicesToggleButton instanceof HTMLButtonElement) {
+      servicesDropdown.classList.remove("is-open");
+      servicesToggleButton.setAttribute("aria-expanded", "false");
+    }
+  };
+
+  const openMenu = () => {
+    siteHeader.classList.add("is-menu-open");
+    navToggleButton.setAttribute("aria-expanded", "true");
+    navToggleButton.setAttribute("aria-label", "Close menu");
+  };
+
+  navToggleButton.addEventListener("click", () => {
+    const isOpen = siteHeader.classList.contains("is-menu-open");
+    if (isOpen) closeMenu();
+    else openMenu();
+  });
+
+  if (servicesDropdown && servicesToggleButton instanceof HTMLButtonElement) {
+    servicesToggleButton.addEventListener("click", () => {
+      if (!mobileQuery.matches) return;
+      const isOpen = servicesDropdown.classList.toggle("is-open");
+      servicesToggleButton.setAttribute("aria-expanded", String(isOpen));
+    });
+  }
+
+  navElement.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest("a")) closeMenu();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeMenu();
+  });
+
+  if (typeof mobileQuery.addEventListener === "function") {
+    mobileQuery.addEventListener("change", (event) => {
+      if (!event.matches) closeMenu();
+    });
+  } else if (typeof mobileQuery.addListener === "function") {
+    mobileQuery.addListener((event) => {
+      if (!event.matches) closeMenu();
+    });
+  }
 }
 
 /**
@@ -150,15 +241,73 @@ function initializeContactForm() {
 }
 
 /**
+ * Groups the two service pages into a dropdown in the navigation.
+ */
+function organizeServicesDropdown() {
+  const nav = document.querySelector(".nav");
+  if (!nav) return;
+
+  // Avoid running if a dropdown already exists
+  if (nav.querySelector("[data-nav-dropdown]")) return;
+
+  const links = Array.from(nav.querySelectorAll(".nav-link"));
+  // Identify the links to move based on their text content
+  const servicesLinks = links.filter(link => {
+    const text = link.textContent.toLowerCase();
+    return text.includes("naylor home") || text.includes("wilkins naylor");
+  });
+
+  if (servicesLinks.length === 0) return;
+
+  // Create the dropdown structure
+  const dropdown = document.createElement("div");
+  dropdown.className = "nav-dropdown";
+  dropdown.setAttribute("data-nav-dropdown", "");
+
+  const toggle = document.createElement("button");
+  toggle.className = "nav-dropdown-toggle nav-link";
+  toggle.setAttribute("data-nav-dropdown-toggle", "");
+  toggle.textContent = "Services";
+  
+  const menu = document.createElement("div");
+  menu.className = "nav-dropdown-menu";
+
+  servicesLinks.forEach((link) => {
+    const subLink = document.createElement("a");
+    subLink.className = "nav-sub-link";
+    subLink.href = link.getAttribute("href");
+    subLink.textContent = link.textContent;
+    menu.appendChild(subLink);
+    link.remove();
+  });
+
+  dropdown.appendChild(toggle);
+  dropdown.appendChild(menu);
+
+  // Insert before Contact link if it exists, otherwise append
+  const contactLink = nav.querySelector('a[href*="contact"]');
+  if (contactLink) {
+    nav.insertBefore(dropdown, contactLink);
+  } else {
+    nav.appendChild(dropdown);
+  }
+}
+
+/**
  * Bootstraps shared page chrome and global UI state.
  */
 (async function initializeSiteLayout() {
+  const includeBasePath = isBlogDetailPage() ? "../../includes" : "../includes";
+
   await Promise.all([
-    injectHtmlInclude("site-header", "../includes/header.html"),
-    injectHtmlInclude("site-footer", "../includes/footer.html"),
+    injectHtmlInclude("site-header", `${includeBasePath}/header.html`),
+    injectHtmlInclude("site-footer", `${includeBasePath}/footer.html`),
   ]);
 
+  rewriteInjectedLinksForNestedBlogPages();
+  organizeServicesDropdown();
   highlightCurrentNavLink();
+  initializeMobileNavigation();
   renderCurrentYear();
   initializeReviewsCarousel();
   initializeReviewModal();

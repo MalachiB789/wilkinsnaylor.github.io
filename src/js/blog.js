@@ -1,11 +1,15 @@
 function getBlogPostUrl(slug) {
-  return `./blog-${encodeURIComponent(slug)}.html`;
+  return `./blog/${encodeURIComponent(slug)}.html`;
+}
+
+function getPostMeta(post) {
+  return post.dateLabel || "";
 }
 
 function createBlogCardMarkup(post) {
   return `
     <article class="service-card">
-      <p class="blog-card-meta">${post.dateLabel} · ${post.category} · ${post.readTime}</p>
+      <p class="blog-card-meta">${getPostMeta(post)}</p>
       <h3>${post.title}</h3>
       <p class="muted">${post.excerpt}</p>
       <p style="margin-top: 10px;"><a class="text-link" href="${getBlogPostUrl(post.slug)}">Read post</a></p>
@@ -24,7 +28,7 @@ function renderBlogArchivePage() {
       <article class="blog-featured">
         <span class="hero-badge">Latest Update</span>
         <h3>No posts yet</h3>
-        <p class="muted">Add posts in <code>src/js/posts.js</code> to populate this page.</p>
+        <p class="muted">Add a markdown file in <code>src/content/blog</code> and run <code>node scripts/generate-blog-posts.js</code>.</p>
       </article>
     `;
     return;
@@ -35,7 +39,7 @@ function renderBlogArchivePage() {
   featuredContainer.innerHTML = `
     <article class="blog-featured">
       <span class="hero-badge">Latest Update</span>
-      <p class="blog-card-meta">${latestPost.dateLabel} · ${latestPost.category} · ${latestPost.readTime}</p>
+      <p class="blog-card-meta">${getPostMeta(latestPost)}</p>
       <h3>${latestPost.title}</h3>
       <p class="muted">${latestPost.excerpt}</p>
       <a class="btn" href="${getBlogPostUrl(latestPost.slug)}">Read article</a>
