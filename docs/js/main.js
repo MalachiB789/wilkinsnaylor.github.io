@@ -10,23 +10,57 @@ async function injectHtmlInclude(targetElementId, includeFilePath) {
 }
 
 function isBlogDetailPage() {
-  return location.pathname.toLowerCase().includes("/blog/");
+  const segments = getNormalizedPath().split("/").filter(Boolean);
+  return segments.at(-2) === "blog" && Boolean(segments.at(-1));
 }
 
-function rewriteInjectedLinksForNestedBlogPages() {
-  if (!isBlogDetailPage()) return;
+function getNormalizedPath() {
+  return location.pathname
+    .toLowerCase()
+    .replace(/\/index\.html$/, "")
+    .replace(/\/+$/, "");
+}
+
+function getPageDepth() {
+  const segments = getNormalizedPath().split("/").filter(Boolean);
+  const currentSegment = segments.at(-1) || "";
+  const parentSegment = segments.at(-2) || "";
+
+  if (parentSegment === "blog" && currentSegment) return 2;
+  if (["about", "blog", "contact", "naylor-homes-ltd", "wilkins-naylor-ltd"].includes(currentSegment)) return 1;
+  return 0;
+}
+
+function getCurrentSection() {
+  const segments = getNormalizedPath().split("/").filter(Boolean);
+  const currentSegment = segments.at(-1) || "";
+  const parentSegment = segments.at(-2) || "";
+
+  if (currentSegment === "blog" || parentSegment === "blog") return "blog";
+  if (currentSegment === "about") return "about";
+  if (currentSegment === "contact") return "contact";
+  if (currentSegment === "naylor-homes-ltd") return "naylor-homes-ltd";
+  if (currentSegment === "wilkins-naylor-ltd") return "wilkins-naylor-ltd";
+  return "home";
+}
+
+function rewriteInjectedLinksForNestedPages() {
+  const pageDepth = getPageDepth();
+  if (pageDepth === 0) return;
+
+  const prefix = "../".repeat(pageDepth);
 
   document.querySelectorAll("#site-header a[href], #site-footer a[href]").forEach((link) => {
     const href = link.getAttribute("href");
     if (!href || !href.startsWith("./")) return;
-    link.setAttribute("href", `../${href.slice(2)}`);
+    link.setAttribute("href", `${prefix}${href.slice(2)}`);
   });
 
   document.querySelectorAll("#site-header img[src], #site-footer img[src]").forEach((image) => {
     const src = image.getAttribute("src");
     if (!src) return;
     if (src.startsWith("./assets/")) {
-      image.setAttribute("src", `../${src}`);
+      image.setAttribute("src", `${prefix}${src.slice(2)}`);
     }
   });
 }
@@ -35,11 +69,16 @@ function rewriteInjectedLinksForNestedBlogPages() {
  * Marks the current page link in the shared navigation.
  */
 function highlightCurrentNavLink() {
-  const currentFileName = (location.pathname.split("/").pop() || "index.html").toLowerCase();
-  const normalizedFileName = isBlogDetailPage() ? "blog.html" : currentFileName;
+  const currentSection = getCurrentSection();
   document.querySelectorAll(".nav-link, .nav-sub-link").forEach((navLink) => {
     const href = (navLink.getAttribute("href") || "").toLowerCase();
-    if (href.endsWith(normalizedFileName)) {
+    const normalizedHref = href.replace(/\/+$/, "");
+    const targetSection =
+      normalizedHref === "." || normalizedHref === "./"
+        ? "home"
+        : normalizedHref.replace(/^\.\//, "").split("/")[0];
+
+    if (targetSection === currentSection) {
       navLink.classList.add("is-active");
       // If it's a sub-link, also highlight the parent dropdown toggle
       const parentDropdown = navLink.closest(".nav-dropdown");
@@ -297,14 +336,14 @@ function organizeServicesDropdown() {
  * Bootstraps shared page chrome and global UI state.
  */
 (async function initializeSiteLayout() {
-  const includeBasePath = isBlogDetailPage() ? "../includes" : "./includes";
+  const includeBasePath = `${"../".repeat(getPageDepth()) || "./"}includes`;
 
   await Promise.all([
     injectHtmlInclude("site-header", `${includeBasePath}/header.html`),
     injectHtmlInclude("site-footer", `${includeBasePath}/footer.html`),
   ]);
 
-  rewriteInjectedLinksForNestedBlogPages();
+  rewriteInjectedLinksForNestedPages();
   organizeServicesDropdown();
   highlightCurrentNavLink();
   initializeMobileNavigation();

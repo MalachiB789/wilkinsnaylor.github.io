@@ -1,5 +1,10 @@
 function getBlogPostUrl(slug) {
-  return `./blog/${encodeURIComponent(slug)}.html`;
+  const normalizedPath = location.pathname.toLowerCase().replace(/\/index\.html$/, "/");
+  if (normalizedPath.endsWith("/blog/")) {
+    return `./${encodeURIComponent(slug)}/`;
+  }
+
+  return `./blog/${encodeURIComponent(slug)}/`;
 }
 
 function getPostMeta(post) {

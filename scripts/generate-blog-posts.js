@@ -219,11 +219,11 @@ function renderPostPage(post) {
   <title>${escapeHtml(post.title)} | Blog</title>
   <meta name="description" content="${escapeHtml(post.excerpt)}" />
 
-  <link rel="icon" href="../favicon.ico" sizes="any" />
-  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
-  <link rel="stylesheet" href="../css/base.css" />
-  <link rel="stylesheet" href="../css/components.css" />
-  <link rel="stylesheet" href="../css/pages.css" />
+  <link rel="icon" href="../../favicon.ico" sizes="any" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="stylesheet" href="../../css/base.css" />
+  <link rel="stylesheet" href="../../css/components.css" />
+  <link rel="stylesheet" href="../../css/pages.css" />
 </head>
 
 <body>
@@ -246,14 +246,14 @@ function renderPostPage(post) {
           <div class="blog-post-prose">
           ${post.bodyHtml}
           </div>
-          <p class="blog-post-back"><a class="text-link" href="../blog.html">Back to blog</a></p>
+          <p class="blog-post-back"><a class="text-link" href="../">Back to blog</a></p>
         </article>
       </div>
     </section>
   </main>
 
   <div id="site-footer"></div>
-  <script src="../js/main.js" defer></script>
+  <script src="../../js/main.js" defer></script>
 </body>
 </html>
 `;
@@ -282,7 +282,8 @@ function generate() {
   const posts = loadPosts();
 
   posts.forEach((post) => {
-    const outputPath = path.join(OUTPUT_DIR, `${post.slug}.html`);
+    const outputPath = path.join(OUTPUT_DIR, post.slug, "index.html");
+    ensureDirectory(path.dirname(outputPath));
     fs.writeFileSync(outputPath, renderPostPage(post), "utf8");
     console.log(`Generated ${path.relative(ROOT, outputPath)}`);
   });
