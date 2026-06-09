@@ -1,5 +1,14 @@
 window.BLOG_POSTS = [
   {
+    "slug": "supporting-local-growth-with-pass-learn",
+    "title": "Supporting Local Growth with Pass Learn",
+    "excerpt": "Wilkins Naylor Homes is proud to highlight Pass Learn, a growing North Yorkshire distance learning provider, and reaffirm our commitment to supporting local employers with high quality accommodation solutions.",
+    "date": "2026-06-07",
+    "dateLabel": "7 June 2026",
+    "category": "",
+    "readTime": "2 min read"
+  },
+  {
     "slug": "bringing-more-homes-back-into-use-for-the-skipton-community",
     "title": "Bringing More Homes Back into Use for the Skipton Community",
     "excerpt": "Wilkins Naylor brings neglected and empty properties back into use, transforming them into high quality homes for renters in Skipton and the surrounding areas.",

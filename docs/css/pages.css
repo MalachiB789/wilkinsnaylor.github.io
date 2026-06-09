@@ -712,9 +712,14 @@ input:focus, textarea:focus, select:focus{
 }
 
 .blog-post-prose a{
-  color: inherit;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 4px;
+  color: var(--primary);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.blog-post-prose a:hover{
+  text-decoration: underline;
 }
 
 .blog-post-prose code{
